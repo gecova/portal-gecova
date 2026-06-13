@@ -15,20 +15,29 @@
     }
     * { box-sizing:border-box; margin:0; padding:0; }
     body { font-family:'Montserrat','Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
-    header { background:var(--dark); padding:0 24px; height:62px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 12px rgba(0,0,0,0.22); position:sticky; top:0; z-index:200; flex-shrink:0; }
-    .header-left { display:flex; align-items:center; gap:14px; }
-    .header-logo { height:34px; width:auto; }
+ 
+    /* HEADER */
+    header { background:var(--dark); padding:0 16px; height:62px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 12px rgba(0,0,0,0.22); position:sticky; top:0; z-index:200; flex-shrink:0; }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .header-logo { height:32px; width:auto; }
     .header-divider { width:1px; height:28px; background:rgba(255,255,255,0.2); }
     .header-app-name { color:var(--teal); font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
-    .header-right { display:flex; align-items:center; gap:10px; }
+    .header-right { display:flex; align-items:center; gap:8px; }
     .header-user { color:rgba(255,255,255,0.85); font-size:12px; font-weight:600; }
     .btn-header { padding:5px 12px; border-radius:8px; font-size:10px; font-weight:700; font-family:inherit; cursor:pointer; text-decoration:none; border:none; display:inline-block; letter-spacing:0.5px; }
     .btn-admin { background:rgba(220,222,60,0.18); color:var(--yellow); }
     .btn-admin:hover { background:rgba(220,222,60,0.3); }
     .btn-logout { background:rgba(250,97,1,0.18); color:var(--orange); }
     .btn-logout:hover { background:rgba(250,97,1,0.3); }
-    .app-body { display:flex; flex:1; min-height:0; }
-    .sidebar { width:var(--sidebar-w); background:var(--dark2); flex-shrink:0; display:flex; flex-direction:column; padding:20px 0; overflow-y:auto; position:sticky; top:62px; height:calc(100vh - 62px); }
+ 
+    /* HAMBURGER */
+    .btn-hamburger { display:none; background:none; border:none; cursor:pointer; padding:6px; color:white; font-size:22px; line-height:1; }
+ 
+    /* LAYOUT */
+    .app-body { display:flex; flex:1; min-height:0; position:relative; }
+ 
+    /* SIDEBAR */
+    .sidebar { width:var(--sidebar-w); background:var(--dark2); flex-shrink:0; display:flex; flex-direction:column; padding:20px 0; overflow-y:auto; position:sticky; top:62px; height:calc(100vh - 62px); transition:transform 0.25s ease; z-index:100; }
     .sidebar-section { padding:0 12px 6px; font-size:9px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:rgba(121,196,219,0.55); margin-top:16px; }
     .sidebar-section:first-child { margin-top:0; }
     .nav-item { display:flex; align-items:center; gap:10px; padding:10px 16px; color:rgba(255,255,255,0.65); font-size:12px; font-weight:600; text-decoration:none; border-left:3px solid transparent; transition:all 0.18s; cursor:pointer; }
@@ -37,16 +46,41 @@
     .nav-item.disabled { opacity:0.4; cursor:not-allowed; pointer-events:none; }
     .nav-icon { font-size:15px; width:20px; text-align:center; flex-shrink:0; }
     .nav-soon { margin-left:auto; font-size:9px; font-weight:600; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.35); padding:1px 6px; border-radius:8px; }
+ 
+    /* OVERLAY (mobile) */
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:99; }
+    .sidebar-overlay.visible { display:block; }
+ 
+    /* CONTENT */
     .content-area { flex:1; overflow-y:auto; min-width:0; }
     .flash { padding:12px 20px; font-size:12px; font-weight:600; }
     .flash.success { background:var(--success); color:#27500a; border-bottom:1px solid #9dcc6b; }
     .flash.error { background:var(--error); color:#a32d2d; border-bottom:1px solid #f5c2c2; }
+ 
+    /* MOBILE */
+    @media (max-width: 768px) {
+      .btn-hamburger { display:block; }
+      .header-user { display:none; }
+      .header-app-name { display:none; }
+      .header-divider { display:none; }
+      .sidebar {
+        position:fixed;
+        top:62px;
+        left:0;
+        height:calc(100vh - 62px);
+        transform:translateX(-100%);
+      }
+      .sidebar.open { transform:translateX(0); }
+      .content-area { width:100%; }
+    }
+ 
     {% block extra_styles %}{% endblock %}
   </style>
 </head>
 <body>
 <header>
   <div class="header-left">
+    <button class="btn-hamburger" onclick="toggleSidebar()" aria-label="Menú">&#9776;</button>
     <img src="data:image/png;base64,{{ logo_b64 }}" alt="GECOVA" class="header-logo">
     <div class="header-divider"></div>
     <span class="header-app-name">Portal GECOVA</span>
@@ -57,13 +91,16 @@
     <a href="/logout" class="btn-header btn-logout">Salir</a>
   </div>
 </header>
+ 
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+ 
 <div class="app-body">
-  <nav class="sidebar">
+  <nav class="sidebar" id="sidebar">
     <div class="sidebar-section">Módulos</div>
-    <a href="/generacion" class="nav-item {% if active == 'generacion' %}active{% endif %}">
+    <a href="/generacion" class="nav-item {% if active == 'generacion' %}active{% endif %}" onclick="closeSidebar()">
       <span class="nav-icon">☀️</span><span>Reportes de Generación</span>
     </a>
-    <a href="/mantenimiento" class="nav-item {% if active == 'mantenimiento' %}active{% endif %}">
+    <a href="/mantenimiento" class="nav-item {% if active == 'mantenimiento' %}active{% endif %}" onclick="closeSidebar()">
       <span class="nav-icon">🔧</span><span>Órdenes de Mantenimiento</span>
     </a>
     <div class="nav-item disabled">
@@ -74,7 +111,7 @@
     </div>
     {% if es_admin %}
     <div class="sidebar-section">Administración</div>
-    <a href="/admin" class="nav-item {% if active == 'admin' %}active{% endif %}">
+    <a href="/admin" class="nav-item {% if active == 'admin' %}active{% endif %}" onclick="closeSidebar()">
       <span class="nav-icon">👥</span><span>Usuarios</span>
     </a>
     {% endif %}
@@ -88,5 +125,16 @@
     {% block content %}{% endblock %}
   </div>
 </div>
+ 
+<script>
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('visible');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('visible');
+  }
+</script>
 </body>
 </html>
