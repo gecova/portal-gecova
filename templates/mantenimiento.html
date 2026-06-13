@@ -195,7 +195,8 @@
 .field input:focus, .field select:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(121,196,219,0.15); }
 .field input[readonly] { background:var(--light); font-weight:700; color:var(--dark); }
 .radio-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.radio-option { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all 0.18s; font-size:12px; font-weight:600; color:var(--text); }
+.radio-option { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all 0.18s; font-size:12px; font-weight:600; color:var(--text); overflow:hidden; width:100%; }
+.radio-option span { flex:1; min-width:0; word-break:break-word; }
 @media (max-width: 500px) { .radio-grid { grid-template-columns:1fr; } }
 .radio-option:hover { border-color:var(--teal); background:var(--light); }
 .radio-option input[type=radio] { accent-color:var(--orange); transform:scale(1.2); }
@@ -361,16 +362,16 @@
           <label>Condición inicial del sistema</label>
           <div class="radio-grid">
             <label class="radio-option" onclick="selectCondicion(this)">
-              <input type="radio" name="condicion" value="Operando normalmente"> Operando normalmente
+              <input type="radio" name="condicion" value="Operando normalmente"><span>Operando normalmente</span>
             </label>
             <label class="radio-option" onclick="selectCondicion(this)">
-              <input type="radio" name="condicion" value="Con alarma activa"> Con alarma activa
+              <input type="radio" name="condicion" value="Con alarma activa"><span>Con alarma activa</span>
             </label>
             <label class="radio-option" onclick="selectCondicion(this)">
-              <input type="radio" name="condicion" value="Fuera de servicio"> Fuera de servicio
+              <input type="radio" name="condicion" value="Fuera de servicio"><span>Fuera de servicio</span>
             </label>
             <label class="radio-option" onclick="selectCondicion(this)">
-              <input type="radio" name="condicion" value="Primera visita"> Primera visita
+              <input type="radio" name="condicion" value="Primera visita"><span>Primera visita</span>
             </label>
           </div>
         </div>
