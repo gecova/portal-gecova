@@ -196,6 +196,7 @@
 .field input[readonly] { background:var(--light); font-weight:700; color:var(--dark); }
 .radio-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .radio-option { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all 0.18s; font-size:12px; font-weight:600; color:var(--text); }
+@media (max-width: 500px) { .radio-grid { grid-template-columns:1fr; } }
 .radio-option:hover { border-color:var(--teal); background:var(--light); }
 .radio-option input[type=radio] { accent-color:var(--orange); transform:scale(1.2); }
 .radio-option.selected { border-color:var(--orange); background:#fff3ec; color:var(--dark); }
