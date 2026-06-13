@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{% if modo == 'nuevo' %}Nuevo Usuario{% else %}Editar Usuario{% endif %} — GECOVA{% endblock %}
+
+{% block extra_styles %}
+main { max-width:560px; margin:36px auto; padding:0 20px 60px; }
+    .page-title { font-size:20px; font-weight:800; color:var(--dark); margin-bottom:6px; }
+    .page-sub { font-size:12px; color:var(--gray); margin-bottom:24px; }
+    .card { background:white; border:1px solid var(--border); border-radius:14px; padding:28px; box-shadow:0 2px 8px rgba(9,79,104,0.06); }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .form-group { display:flex; flex-direction:column; gap:5px; }
+    .form-group.full { grid-column:1/-1; }
+    label { font-size:10px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--gray); }
+    input[type=text], input[type=password], input[type=email], input[type=tel], input[type=date] {
+      padding:10px 13px; border:1.5px solid var(--border); border-radius:8px;
+      font-size:13px; font-family:inherit; color:#1a2530; transition:border-color 0.2s;
+    }
+    input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(121,196,219,0.15); }
+    .checkbox-row { display:flex; align-items:center; gap:8px; }
+    .checkbox-row input { width:16px; height:16px; }
+    .checkbox-row label { font-size:12px; text-transform:none; letter-spacing:0; color:#1a2530; font-weight:600; }
+    .btn-row { display:flex; gap:10px; margin-top:20px; }
+    .btn {
+      flex:1; padding:12px; border-radius:10px; font-size:13px; font-weight:800;
+      font-family:inherit; cursor:pointer; border:none; transition:all 0.2s;
+    }
+    .btn-primary { background:linear-gradient(135deg,#FA6101,#d95200); color:white; }
+    .btn-primary:hover { opacity:0.92; transform:translateY(-1px); }
+    .btn-secondary { background:var(--light); color:var(--dark); }
+    .btn-secondary:hover { background:var(--border); }
+    .error { background:#fdecea; color:#a32d2d; border:1px solid #f5c2c2; border-radius:8px; padding:10px 14px; font-size:12px; font-weight:600; margin-bottom:16px; }
+    .hint { font-size:10px; color:var(--gray); margin-top:2px; }
+    .divider { grid-column:1/-1; border-top:1px solid var(--border); padding-top:4px; }
+    .divider-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--dark); }
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="page-title">{{ 'Nuevo usuario' if modo == 'nuevo' else 'Editar usuario' }}</div>
+  <div class="page-sub">{{ 'Completa los datos del nuevo usuario.' if modo == 'nuevo' else 'Modifica los datos del usuario.' }}</div>
+
+  {% if error %}<div class="error">⚠ {{ error }}</div>{% endif %}
+
+  <div class="card">
+    <form method="POST">
+      <div class="form-grid">
+
+        <div class="form-group full">
+          <div class="divider"><div class="divider-label">Acceso al portal</div></div>
+        </div>
+
+        <div class="form-group">
+          <label>Usuario *</label>
+          <input type="text" name="usuario" value="{{ usuario.usuario if usuario else '' }}"
+                 placeholder="ej. jgarcia" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña {{ '(dejar vacío para no cambiar)' if modo == 'editar' else '*' }}</label>
+          <input type="password" name="password" placeholder="••••••••" {{ 'required' if modo == 'nuevo' else '' }}>
+        </div>
+
+        <div class="form-group full">
+          <div class="divider"><div class="divider-label">Información personal</div></div>
+        </div>
+
+        <div class="form-group full">
+          <label>Nombre completo *</label>
+          <input type="text" name="nombre" value="{{ usuario.nombre if usuario else '' }}" placeholder="ej. Juan García López" required>
+        </div>
+        <div class="form-group">
+          <label>Puesto</label>
+          <input type="text" name="puesto" value="{{ usuario.puesto if usuario else '' }}" placeholder="ej. Técnico instalador">
+        </div>
+        <div class="form-group">
+          <label>Fecha de nacimiento</label>
+          <input type="date" name="nacimiento" value="{{ usuario.nacimiento if usuario else '' }}">
+        </div>
+        <div class="form-group">
+          <label>Correo electrónico</label>
+          <input type="email" name="correo" value="{{ usuario.correo if usuario else '' }}" placeholder="correo@gecova.mx">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" name="telefono" value="{{ usuario.telefono if usuario else '' }}" placeholder="664 000 0000">
+        </div>
+
+        <div class="form-group full">
+          <div class="checkbox-row">
+            <input type="checkbox" name="es_admin" id="es_admin" {{ 'checked' if usuario and usuario.es_admin else '' }}>
+            <label for="es_admin">Este usuario es administrador (acceso al panel de administración)</label>
+          </div>
+        </div>
+
+      </div>
+      <div class="btn-row">
+        <a href="/admin" class="btn btn-secondary" style="text-align:center;text-decoration:none;">Cancelar</a>
+        <button type="submit" class="btn btn-primary">
+          {{ 'Crear usuario' if modo == 'nuevo' else 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</main>
+{% endblock %}

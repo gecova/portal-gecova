@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}GECOVA Portal{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark:#094F68; --dark2:#073d52; --orange:#FA6101; --teal:#79C4DB;
+      --yellow:#DCDE3C; --bg:#f0f5f8; --card:#ffffff; --gray:#7a8a96;
+      --text:#1a2530; --border:#dde6ec; --light:#EEF6FA;
+      --success:#eaf3de; --error:#fdecea; --sidebar-w:220px;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Montserrat','Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
+    header { background:var(--dark); padding:0 24px; height:62px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 12px rgba(0,0,0,0.22); position:sticky; top:0; z-index:200; flex-shrink:0; }
+    .header-left { display:flex; align-items:center; gap:14px; }
+    .header-logo { height:34px; width:auto; }
+    .header-divider { width:1px; height:28px; background:rgba(255,255,255,0.2); }
+    .header-app-name { color:var(--teal); font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+    .header-right { display:flex; align-items:center; gap:10px; }
+    .header-user { color:rgba(255,255,255,0.85); font-size:12px; font-weight:600; }
+    .btn-header { padding:5px 12px; border-radius:8px; font-size:10px; font-weight:700; font-family:inherit; cursor:pointer; text-decoration:none; border:none; display:inline-block; letter-spacing:0.5px; }
+    .btn-admin { background:rgba(220,222,60,0.18); color:var(--yellow); }
+    .btn-admin:hover { background:rgba(220,222,60,0.3); }
+    .btn-logout { background:rgba(250,97,1,0.18); color:var(--orange); }
+    .btn-logout:hover { background:rgba(250,97,1,0.3); }
+    .app-body { display:flex; flex:1; min-height:0; }
+    .sidebar { width:var(--sidebar-w); background:var(--dark2); flex-shrink:0; display:flex; flex-direction:column; padding:20px 0; overflow-y:auto; position:sticky; top:62px; height:calc(100vh - 62px); }
+    .sidebar-section { padding:0 12px 6px; font-size:9px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:rgba(121,196,219,0.55); margin-top:16px; }
+    .sidebar-section:first-child { margin-top:0; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 16px; color:rgba(255,255,255,0.65); font-size:12px; font-weight:600; text-decoration:none; border-left:3px solid transparent; transition:all 0.18s; cursor:pointer; }
+    .nav-item:hover { background:rgba(255,255,255,0.07); color:white; border-left-color:var(--teal); }
+    .nav-item.active { background:rgba(121,196,219,0.12); color:white; border-left-color:var(--orange); }
+    .nav-item.disabled { opacity:0.4; cursor:not-allowed; pointer-events:none; }
+    .nav-icon { font-size:15px; width:20px; text-align:center; flex-shrink:0; }
+    .nav-soon { margin-left:auto; font-size:9px; font-weight:600; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.35); padding:1px 6px; border-radius:8px; }
+    .content-area { flex:1; overflow-y:auto; min-width:0; }
+    .flash { padding:12px 20px; font-size:12px; font-weight:600; }
+    .flash.success { background:var(--success); color:#27500a; border-bottom:1px solid #9dcc6b; }
+    .flash.error { background:var(--error); color:#a32d2d; border-bottom:1px solid #f5c2c2; }
+    {% block extra_styles %}{% endblock %}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <img src="data:image/png;base64,{{ logo_b64 }}" alt="GECOVA" class="header-logo">
+    <div class="header-divider"></div>
+    <span class="header-app-name">Portal GECOVA</span>
+  </div>
+  <div class="header-right">
+    <span class="header-user">{{ nombre }}</span>
+    {% if es_admin %}<a href="/admin" class="btn-header btn-admin">⚙ Admin</a>{% endif %}
+    <a href="/logout" class="btn-header btn-logout">Salir</a>
+  </div>
+</header>
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-section">Módulos</div>
+    <a href="/generacion" class="nav-item {% if active == 'generacion' %}active{% endif %}">
+      <span class="nav-icon">☀️</span><span>Reportes de Generación</span>
+    </a>
+    <a href="/mantenimiento" class="nav-item {% if active == 'mantenimiento' %}active{% endif %}">
+      <span class="nav-icon">🔧</span><span>Órdenes de Mantenimiento</span>
+    </a>
+    <div class="nav-item disabled">
+      <span class="nav-icon">📄</span><span>Cotizaciones</span><span class="nav-soon">Pronto</span>
+    </div>
+    <div class="nav-item disabled">
+      <span class="nav-icon">📋</span><span>Órdenes de Trabajo</span><span class="nav-soon">Pronto</span>
+    </div>
+    {% if es_admin %}
+    <div class="sidebar-section">Administración</div>
+    <a href="/admin" class="nav-item {% if active == 'admin' %}active{% endif %}">
+      <span class="nav-icon">👥</span><span>Usuarios</span>
+    </a>
+    {% endif %}
+  </nav>
+  <div class="content-area">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+{% block title %}Generación Solar — GECOVA{% endblock %}
+
+{% block extra_styles %}
+/* ── Hero strip ──────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, var(--dark2) 0%, var(--dark) 60%, #0a6585 100%);
+      padding: 32px 40px 28px;
+      border-bottom: 3px solid var(--orange);
+    }
+    .hero h1 { color: white; font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+    .hero p  { color: var(--teal); font-size: 13px; font-weight: 500; }
+
+    /* ── Steps bar ───────────────────────────────────────────── */
+    .steps-wrap { background: white; border-bottom: 1px solid var(--border); padding: 0 40px; }
+    .steps { display: flex; max-width: 860px; margin: 0 auto; }
+    .step {
+      flex: 1; padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 3px solid transparent; transition: all 0.2s;
+    }
+    .step.active { border-bottom-color: var(--orange); }
+    .step.done   { border-bottom-color: var(--teal); }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      background: var(--border); color: var(--gray);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+    .step.active .step-num { background: var(--orange); color: white; }
+    .step.done   .step-num { background: var(--teal); color: white; }
+    .step-label  { font-size: 12px; font-weight: 600; color: var(--gray); }
+    .step.active .step-label { color: var(--dark); }
+    .step.done   .step-label { color: var(--teal); }
+
+    /* ── Main content ────────────────────────────────────────── */
+    main { max-width: 860px; margin: 0 auto; padding: 28px 20px 60px; }
+
+    /* ── Cards ───────────────────────────────────────────────── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 26px 28px; margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(9,79,104,0.06);
+    }
+    .card-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    }
+    .card-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--light); display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .card-title { font-size: 14px; font-weight: 700; color: var(--dark); }
+    .card-sub   { font-size: 11px; color: var(--gray); font-weight: 500; }
+
+    /* ── Upload zones ────────────────────────────────────────── */
+    .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .upload-zone {
+      border: 2px dashed var(--border); border-radius: 12px;
+      padding: 28px 16px; text-align: center; cursor: pointer;
+      transition: all 0.2s; background: var(--bg); position: relative; overflow: hidden;
+    }
+    .upload-zone::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--orange), var(--teal));
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .upload-zone:hover::before, .upload-zone.filled::before { opacity: 1; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--teal); background: var(--light); }
+    .upload-zone.filled { border-color: var(--teal); border-style: solid; background: var(--light); }
+    .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-icon  { font-size: 32px; margin-bottom: 10px; }
+    .upload-label { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .upload-hint  { font-size: 11px; color: var(--gray); font-weight: 500; }
+    .upload-name  { font-size: 11px; color: var(--orange); font-weight: 700; margin-top: 8px;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── Buttons ─────────────────────────────────────────────── */
+    .btn-extract {
+      width: 100%; padding: 14px; margin-top: 18px;
+      background: var(--dark); color: white; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: all 0.2s; letter-spacing: 0.3px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-extract:hover:not(:disabled) { background: #0a6585; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(9,79,104,0.25); }
+    .btn-extract:disabled { background: var(--border); color: var(--gray); cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-generate {
+      width: 100%; padding: 16px; margin-top: 10px;
+      background: linear-gradient(135deg, var(--orange), #d95200);
+      color: white; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit;
+      transition: all 0.2s; letter-spacing: 0.3px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-generate:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(250,97,1,0.35); }
+    .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── Form ────────────────────────────────────────────────── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--gray); }
+    input {
+      padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 13px; color: var(--text); background: white;
+      font-family: inherit; font-weight: 500; transition: border-color 0.2s;
+    }
+    input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(121,196,219,0.15); }
+
+    /* ── Dividers ────────────────────────────────────────────── */
+    .section-divider {
+      grid-column: 1/-1; display: flex; align-items: center; gap: 10px;
+      margin: 8px 0 4px; color: var(--dark); font-size: 10px; font-weight: 800;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .section-divider::before, .section-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .badge-auto {
+      background: var(--light); color: var(--dark); border: 1px solid var(--teal);
+      font-size: 9px; font-weight: 700; padding: 1px 7px; border-radius: 10px;
+      letter-spacing: 0.5px; margin-left: 4px;
+    }
+    .tag-auto { color: #27500a; background: #eaf3de; border-radius: 4px; padding: 1px 6px; font-size: 9px; font-weight: 700; margin-left: 4px; }
+
+    /* ── Status ──────────────────────────────────────────────── */
+    #status {
+      margin-top: 14px; padding: 14px 18px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; display: none; font-family: inherit;
+    }
+    #status.loading { background: var(--light); color: var(--dark); border: 1px solid var(--teal); }
+    #status.error   { background: var(--error); color: #a32d2d; border: 1px solid #f5c2c2; }
+    #status.success { background: var(--success); color: #27500a; border: 1px solid #9dcc6b; }
+
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid var(--teal); border-top-color: transparent;
+      border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    
+    
+    footer span { color: var(--orange); font-weight: 700; }
+
+/* ── Hero strip ─────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, var(--dark2) 0%, var(--dark) 60%, #0a6585 100%);
+  padding: 26px 40px 22px;
+  border-bottom: 3px solid var(--orange);
+}
+.hero h1 { color: white; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.hero p  { color: var(--teal); font-size: 13px; font-weight: 500; }
+{% endblock %}
+
+{% block content %}
+<div class="steps-wrap">
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-num">1</div><div class="step-label">Subir archivos</div></div>
+    <div class="step"        id="step2"><div class="step-num">2</div><div class="step-label">Confirmar datos</div></div>
+    <div class="step"        id="step3"><div class="step-num">3</div><div class="step-label">Generar PDF</div></div>
+  </div>
+</div>
+
+<div class="hero">
+  <h1>Nuevo Reporte</h1>
+  <p>Sube el Excel del inversor y el recibo CFE — extraemos todo automáticamente.</p>
+</div>
+
+<main>
+
+  <!-- Paso 1: Archivos -->
+  <div class="card" id="card-upload">
+    <div class="card-header">
+      <div class="card-icon">📂</div>
+      <div>
+        <div class="card-title">Archivos del período</div>
+        <div class="card-sub">Sube ambos archivos para continuar</div>
+      </div>
+    </div>
+    <div class="upload-grid">
+      <div class="upload-zone" id="zone-excel">
+        <input type="file" id="file-excel" accept=".xlsx,.xls">
+        <div class="upload-icon">📊</div>
+        <div class="upload-label">Excel del Inversor</div>
+        <div class="upload-hint">.xlsx exportado del portal</div>
+        <div class="upload-name" id="name-excel"></div>
+      </div>
+      <div class="upload-zone" id="zone-recibo">
+        <input type="file" id="file-recibo" accept=".pdf">
+        <div class="upload-icon">📄</div>
+        <div class="upload-label">Recibo CFE</div>
+        <div class="upload-hint">.pdf del recibo bimestral</div>
+        <div class="upload-name" id="name-recibo"></div>
+      </div>
+    </div>
+    <button class="btn-extract" id="btn-extract" disabled>
+      Extraer datos automáticamente →
+    </button>
+  </div>
+
+  <!-- Paso 2: Formulario -->
+  <div class="card" id="card-form" style="display:none;">
+    <div class="card-header">
+      <div class="card-icon">✏️</div>
+      <div>
+        <div class="card-title">Datos del reporte</div>
+        <div class="card-sub">Verifica y completa la información</div>
+      </div>
+    </div>
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Nombre del sistema</label>
+        <input type="text" id="nombre_sistema" placeholder="ej. GCV001">
+      </div>
+      <div class="form-group">
+        <label>Capacidad instalada (kWp)</label>
+        <input type="text" id="capacidad" placeholder="ej. 3.8">
+      </div>
+      <div class="form-group">
+        <label>Fecha del reporte</label>
+        <input type="text" id="fecha_reporte" placeholder="ej. 10 de junio de 2026">
+      </div>
+      <div class="form-group">
+        <label>Fecha archivo (AAAAMMDD)</label>
+        <input type="text" id="fecha_archivo" placeholder="ej. 20260610">
+      </div>
+
+      <div class="section-divider">Datos del cliente <span class="badge-auto">AUTO</span></div>
+
+      <div class="form-group full">
+        <label>Nombre del cliente <span class="tag-auto" id="tag-cliente"></span></label>
+        <input type="text" id="cliente_nombre" placeholder="Extraído del recibo...">
+      </div>
+      <div class="form-group">
+        <label>No. de servicio CFE <span class="tag-auto" id="tag-servicio"></span></label>
+        <input type="text" id="cliente_servicio">
+      </div>
+      <div class="form-group">
+        <label>Tarifa <span class="tag-auto" id="tag-tarifa"></span></label>
+        <input type="text" id="cliente_tarifa">
+      </div>
+      <div class="form-group">
+        <label>No. de medidor <span class="tag-auto" id="tag-medidor"></span></label>
+        <input type="text" id="cliente_medidor">
+      </div>
+
+      <div class="section-divider">Datos del recibo CFE <span class="badge-auto">AUTO</span></div>
+
+      <div class="form-group">
+        <label>Total a pagar <span class="tag-auto" id="tag-total"></span></label>
+        <input type="text" id="total_pagar">
+      </div>
+      <div class="form-group">
+        <label>kWh facturados <span class="tag-auto" id="tag-kwh"></span></label>
+        <input type="number" id="kwh_facturado">
+      </div>
+      <div class="form-group">
+        <label>kWh básico</label>
+        <input type="number" id="kwh_basico">
+      </div>
+      <div class="form-group">
+        <label>kWh intermedio</label>
+        <input type="number" id="kwh_intermedio">
+      </div>
+      <div class="form-group">
+        <label>kWh excedente</label>
+        <input type="number" id="kwh_excedente">
+      </div>
+      <div class="form-group">
+        <label>Importe básico ($)</label>
+        <input type="number" id="imp_basico">
+      </div>
+      <div class="form-group">
+        <label>Importe intermedio ($)</label>
+        <input type="number" id="imp_intermedio">
+      </div>
+      <div class="form-group">
+        <label>Importe excedente ($)</label>
+        <input type="number" id="imp_excedente">
+      </div>
+      <div class="form-group">
+        <label>Distribución + otros ($)</label>
+        <input type="number" id="imp_otros">
+      </div>
+
+    </div>
+
+    <button class="btn-generate" id="btn-generate">
+      ⚡ Generar Reporte PDF
+    </button>
+    <div id="status"></div>
+  </div>
+
+</main>
+
+
+
+<script>
+  const fileExcel  = document.getElementById('file-excel');
+  const fileRecibo = document.getElementById('file-recibo');
+  const btnExtract = document.getElementById('btn-extract');
+  const btnGenerate= document.getElementById('btn-generate');
+  const status     = document.getElementById('status');
+
+  function setupUpload(input, zone, nameEl) {
+    input.addEventListener('change', () => {
+      if (input.files[0]) {
+        nameEl.textContent = '✓ ' + input.files[0].name;
+        zone.classList.add('filled');
+        checkBothUploaded();
+      }
+    });
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault(); zone.classList.remove('dragover');
+      if (!e.dataTransfer.files.length) return;
+      const file = e.dataTransfer.files[0];
+      const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+      nameEl.textContent = '✓ ' + file.name; zone.classList.add('filled');
+      checkBothUploaded();
+    });
+  }
+
+  setupUpload(fileExcel,  document.getElementById('zone-excel'),  document.getElementById('name-excel'));
+  setupUpload(fileRecibo, document.getElementById('zone-recibo'), document.getElementById('name-recibo'));
+
+  function checkBothUploaded() {
+    btnExtract.disabled = !(fileExcel.files[0] && fileRecibo.files[0]);
+  }
+
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,'0');
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const yyyy = now.getFullYear();
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  document.getElementById('fecha_reporte').value = `${parseInt(dd)} de ${meses[now.getMonth()]} de ${yyyy}`;
+  document.getElementById('fecha_archivo').value  = `${yyyy}${mm}${dd}`;
+
+  btnExtract.addEventListener('click', async () => {
+    btnExtract.disabled = true;
+    btnExtract.innerHTML = '<span class="spinner"></span> Extrayendo datos...';
+    showStatus('loading', 'Leyendo Excel y recibo CFE...');
+    const fd = new FormData();
+    fd.append('excel',  fileExcel.files[0]);
+    fd.append('recibo', fileRecibo.files[0]);
+    try {
+      const res  = await fetch('/extraer', { method:'POST', body:fd });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error);
+      const cfe = json.cfe;
+      window._cfeData = cfe;
+      document.getElementById('total_pagar').value    = cfe.total_pagar    || '';
+      document.getElementById('kwh_facturado').value  = cfe.kwh_facturado  || 0;
+      document.getElementById('kwh_basico').value     = cfe.kwh_basico     || 0;
+      document.getElementById('kwh_intermedio').value = cfe.kwh_intermedio || 0;
+      document.getElementById('kwh_excedente').value  = cfe.kwh_excedente  || 0;
+      document.getElementById('imp_basico').value     = cfe.imp_basico     || 0;
+      document.getElementById('imp_intermedio').value = cfe.imp_intermedio || 0;
+      document.getElementById('imp_excedente').value  = cfe.imp_excedente  || 0;
+      document.getElementById('imp_otros').value      = cfe.imp_otros      || 0;
+      document.getElementById('cliente_nombre').value  = cfe.cliente_nombre   || '';
+      document.getElementById('cliente_servicio').value= cfe.cliente_servicio || '';
+      document.getElementById('cliente_tarifa').value  = cfe.cliente_tarifa   || '';
+      document.getElementById('cliente_medidor').value = cfe.cliente_medidor  || '';
+      ['tag-cliente','tag-servicio','tag-tarifa','tag-medidor','tag-total','tag-kwh'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.textContent = '✓ auto';
+      });
+      document.getElementById('step1').classList.add('done');
+      document.getElementById('step2').classList.add('active');
+      document.getElementById('card-form').style.display = 'block';
+      document.getElementById('card-form').scrollIntoView({ behavior:'smooth', block:'start' });
+      hideStatus();
+      btnExtract.innerHTML = '✓ Datos extraídos';
+    } catch(e) {
+      showStatus('error', 'Error al extraer: ' + e.message);
+      btnExtract.disabled = false;
+      btnExtract.innerHTML = 'Extraer datos automáticamente →';
+    }
+  });
+
+  btnGenerate.addEventListener('click', async () => {
+    btnGenerate.disabled = true;
+    document.getElementById('step2').classList.add('done');
+    document.getElementById('step3').classList.add('active');
+    showStatus('loading', '<span class="spinner"></span> Generando reporte PDF...');
+    const datos = {
+      nombre_sistema:  document.getElementById('nombre_sistema').value,
+      capacidad:       document.getElementById('capacidad').value,
+      fecha_reporte:   document.getElementById('fecha_reporte').value,
+      fecha_archivo:   document.getElementById('fecha_archivo').value,
+      cliente_nombre:  document.getElementById('cliente_nombre').value,
+      cliente_servicio:document.getElementById('cliente_servicio').value,
+      cliente_tarifa:  document.getElementById('cliente_tarifa').value,
+      cliente_medidor: document.getElementById('cliente_medidor').value,
+      total_pagar:     document.getElementById('total_pagar').value,
+      kwh_facturado:   parseInt(document.getElementById('kwh_facturado').value)   || 0,
+      kwh_basico:      parseInt(document.getElementById('kwh_basico').value)      || 0,
+      kwh_intermedio:  parseInt(document.getElementById('kwh_intermedio').value)  || 0,
+      kwh_excedente:   parseInt(document.getElementById('kwh_excedente').value)   || 0,
+      imp_basico:      parseFloat(document.getElementById('imp_basico').value)    || 0,
+      imp_intermedio:  parseFloat(document.getElementById('imp_intermedio').value)|| 0,
+      imp_excedente:   parseFloat(document.getElementById('imp_excedente').value) || 0,
+      imp_otros:       parseFloat(document.getElementById('imp_otros').value)     || 0,
+      historial:       (window._cfeData && window._cfeData.historial) ? window._cfeData.historial : [],
+    };
+    const fd = new FormData();
+    fd.append('datos',  JSON.stringify(datos));
+    fd.append('excel',  fileExcel.files[0]);
+    fd.append('recibo', fileRecibo.files[0]);
+    try {
+      const res = await fetch('/generar', { method:'POST', body:fd });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      const nombre = `${datos.fecha_archivo} - ${datos.nombre_sistema} - Informe_Generación.pdf`;
+      a.href = url; a.download = nombre; a.click(); URL.revokeObjectURL(url);
+      showStatus('success', `✓ Reporte generado: ${nombre}`);
+      document.getElementById('step3').classList.add('done');
+    } catch(e) {
+      showStatus('error', 'Error al generar: ' + e.message);
+    }
+    btnGenerate.disabled = false;
+  });
+
+  function showStatus(type, msg) { status.style.display='block'; status.className=type; status.innerHTML=msg; }
+  function hideStatus() { status.style.display='none'; }
+</script>
+{% endblock %}

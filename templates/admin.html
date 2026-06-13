@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Administración — GECOVA{% endblock %}
+
+{% block extra_styles %}
+.btn-orange { background:var(--orange); color:white; }
+    .btn-dark   { background:rgba(255,255,255,0.15); color:white; }
+    .btn-dark:hover { background:rgba(255,255,255,0.25); }
+    main { max-width:1000px; margin:0 auto; padding:28px 20px 60px; }
+    .page-
+    .page-title { font-size:22px; font-weight:800; color:var(--dark); }
+    .tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:24px; }
+    .tab {
+      padding:10px 20px; font-size:13px; font-weight:600; color:var(--gray);
+      cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px;
+      transition:all 0.2s;
+    }
+    .tab.active { color:var(--dark); border-bottom-color:var(--orange); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    thead { background:var(--dark); }
+    th { padding:10px 14px; font-size:10px; font-weight:700; letter-spacing:0.8px;
+         text-transform:uppercase; color:var(--teal); text-align:left; }
+    td { padding:10px 14px; font-size:12px; border-bottom:1px solid var(--border); }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#f7fafc; }
+    .badge {
+      display:inline-block; padding:2px 8px; border-radius:10px;
+      font-size:10px; font-weight:700; letter-spacing:0.5px;
+    }
+    .badge-green  { background:#eaf3de; color:#27500a; }
+    .badge-red    { background:#fdecea; color:#a32d2d; }
+    .badge-orange { background:#fff3ec; color:#7a3000; }
+    .btn-table {
+      padding:4px 10px; border-radius:6px; font-size:10px; font-weight:700;
+      font-family:inherit; cursor:pointer; border:none; text-decoration:none;
+      display:inline-block; margin-right:4px;
+    }
+    .btn-edit   { background:var(--light); color:var(--dark); }
+    .btn-toggle { background:#fdecea; color:#a32d2d; }
+    .btn-toggle.activate { background:#eaf3de; color:#27500a; }
+    .empty { text-align:center; padding:40px; color:var(--gray); font-size:13px; }
+    .back-link { color:var(--teal); font-size:12px; font-weight:600; text-decoration:none; }
+    .back-link:hover { text-decoration:underline; }
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="page-header">
+    <div class="page-title">Panel de Administración</div>
+    <a href="/admin/usuario/nuevo" class="btn-sm btn-orange">+ Nuevo usuario</a>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('usuarios')">Usuarios</div>
+    <div class="tab" onclick="showTab('reportes')">Historial Generación</div>
+    <div class="tab" onclick="showTab('mantenimiento')">Historial Mantenimiento</div>
+  </div>
+
+  <!-- Tab Usuarios -->
+  <div class="tab-panel active" id="tab-usuarios">
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th><th>Usuario</th><th>Puesto</th>
+            <th>Correo</th><th>Teléfono</th><th>Rol</th><th>Estado</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in usuarios %}
+          <tr>
+            <td><strong>{{ u.nombre }}</strong></td>
+            <td>{{ u.usuario }}</td>
+            <td>{{ u.puesto or '—' }}</td>
+            <td>{{ u.correo or '—' }}</td>
+            <td>{{ u.telefono or '—' }}</td>
+            <td>
+              {% if u.es_admin %}
+                <span class="badge badge-orange">Admin</span>
+              {% else %}
+                <span class="badge" style="background:var(--light);color:var(--dark);">Usuario</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if u.activo %}
+                <span class="badge badge-green">Activo</span>
+              {% else %}
+                <span class="badge badge-red">Inactivo</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="/admin/usuario/{{ u.id }}/editar" class="btn-table btn-edit">Editar</a>
+              <form method="POST" action="/admin/usuario/{{ u.id }}/toggle" style="display:inline;">
+                <button type="submit" class="btn-table btn-toggle {{ '' if u.activo else 'activate' }}">
+                  {{ 'Desactivar' if u.activo else 'Activar' }}
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="empty">No hay usuarios registrados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tab Reportes -->
+  <div class="tab-panel" id="tab-reportes">
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha generado</th><th>Elaborado por</th><th>Puesto</th>
+            <th>Sistema</th><th>Cliente</th><th>Fecha reporte</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reportes %}
+          <tr>
+            <td>{{ r.fecha_generado }}</td>
+            <td><strong>{{ r.nombre }}</strong></td>
+            <td>{{ r.puesto or '—' }}</td>
+            <td>{{ r.nombre_sistema or '—' }}</td>
+            <td>{{ r.cliente or '—' }}</td>
+            <td>{{ r.fecha_reporte or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="empty">Aún no se han generado reportes.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tab Mantenimiento -->
+  <div class="tab-panel" id="tab-mantenimiento">
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Orden</th><th>Fecha</th><th>Cliente</th><th>Central</th><th>Técnico</th><th>Elaborado por</th><th>Registrado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in ordenes_mto %}
+          <tr>
+            <td><strong style="color:var(--dark)">{{ o.numero_orden }}</strong></td>
+            <td>{{ o.fecha_servicio or '—' }}</td>
+            <td>{{ o.cliente or '—' }}</td>
+            <td>{{ o.central or '—' }}</td>
+            <td>{{ o.tecnico or '—' }}</td>
+            <td>{{ o.elaborado_nombre }}</td>
+            <td style="color:#888;font-size:11px;">{{ o.creado[:10] if o.creado else '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="empty">Sin órdenes de mantenimiento registradas aún.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const panels = ['usuarios','reportes','mantenimiento'];
+    t.classList.toggle('active', panels[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-' + name);
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,980 @@
+{% extends "base.html" %}
+{% block title %}Órdenes de Mantenimiento — GECOVA{% endblock %}
+
+{% block extra_styles %}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+
+
+/* ── Top bar ── */
+
+
+
+
+
+
+
+/* ── Card ── */
+.card {
+  width: 100%;
+  max-width: 720px;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+  padding: 32px 36px 36px;
+  box-shadow: 0 4px 24px rgba(9,79,104,0.10);
+}
+
+/* ── Section label ── */
+.section-label {
+  background: #094F68;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+/* ── Grid form ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 24px;
+  margin-bottom: 10px;
+}
+.form-grid .full { grid-column: 1 / -1; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.field label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #094F68;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.field input, .field select, .field textarea {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12.5px;
+  color: #2C2C2C;
+  background: #F4F7FA;
+  border: 1.5px solid #D6E4EC;
+  border-radius: 6px;
+  padding: 9px 12px;
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+  width: 100%;
+  resize: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: #79C4DB;
+  box-shadow: 0 0 0 3px rgba(121,196,219,0.18);
+  background: #fff;
+}
+.field input::placeholder, .field textarea::placeholder {
+  color: #aab8c4;
+}
+
+/* Condición inicial – chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+.chip-opt {
+  display: none;
+}
+.chip-opt + label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6B7A8D;
+  background: #F4F7FA;
+  border: 1.5px solid #D6E4EC;
+  border-radius: 20px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: all .18s;
+  user-select: none;
+}
+.chip-opt:checked + label {
+  background: #094F68;
+  color: #fff;
+  border-color: #094F68;
+}
+
+/* Divider */
+.divider {
+  border: none;
+  border-top: 1.5px solid #EDF2F7;
+  margin: 28px 0;
+}
+
+/* ── Generate button ── */
+.btn-generate {
+  width: 100%;
+  background: #FA6101;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border: none;
+  border-radius: 8px;
+  padding: 15px;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.btn-generate:hover { background: #d95200; }
+.btn-generate:active { transform: scale(.98); }
+.btn-generate svg { flex-shrink: 0; }
+
+/* ── Status ── */
+#status {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 11.5px;
+  color: #6B7A8D;
+  min-height: 18px;
+}
+#status.ok { color: #2ECC71; font-weight: 700; }
+#status.err { color: #E74C3C; font-weight: 700; }
+
+/* ── Preview hint ── */
+.hint {
+  margin-top: 22px;
+  background: #EAF6FB;
+  border-left: 3px solid #79C4DB;
+  border-radius: 0 6px 6px 0;
+  padding: 10px 14px;
+  font-size: 11px;
+  color: #094F68;
+  line-height: 1.6;
+}
+
+</head>
+
+/* ── Module overrides ───────────────────────────────────── */
+.mto-hero {
+  background: linear-gradient(135deg, var(--dark2) 0%, var(--dark) 60%, #0a6585 100%);
+  padding: 22px 32px 18px;
+  border-bottom: 3px solid var(--orange);
+}
+.mto-hero h1 { color: white; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.mto-hero p  { color: var(--teal); font-size: 12px; font-weight: 500; }
+
+.mto-tabs { display:flex; gap:0; border-bottom:2px solid var(--border); padding: 0 24px; background:white; }
+.mto-tab { padding:11px 18px; font-size:13px; font-weight:600; color:var(--gray); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.2s; }
+.mto-tab.active { color:var(--dark); border-bottom-color:var(--orange); }
+.mto-tab-content { display:none; }
+.mto-tab-content.active { display:block; padding:24px; }
+
+/* Checklist form styles within portal */
+.card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px 28px; margin-bottom:16px; box-shadow:0 2px 8px rgba(9,79,104,0.06); }
+.section-label { display:block; font-size:11px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:var(--dark); margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--orange); }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.field { display:flex; flex-direction:column; gap:5px; }
+.field.full { grid-column:1/-1; }
+.field label { font-size:10px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--gray); }
+.field input, .field select {
+  padding:10px 13px; border:1.5px solid var(--border); border-radius:8px;
+  font-size:13px; color:var(--text); background:white;
+  font-family:'Montserrat',sans-serif; font-weight:500; transition:border-color 0.2s;
+}
+.field input:focus, .field select:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(121,196,219,0.15); }
+.field input[readonly] { background:var(--light); font-weight:700; color:var(--dark); }
+.radio-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.radio-option { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all 0.18s; font-size:12px; font-weight:600; color:var(--text); }
+.radio-option:hover { border-color:var(--teal); background:var(--light); }
+.radio-option input[type=radio] { accent-color:var(--orange); transform:scale(1.2); }
+.radio-option.selected { border-color:var(--orange); background:#fff3ec; color:var(--dark); }
+
+.btn-generate {
+  width:100%; padding:15px; margin-top:12px;
+  background:linear-gradient(135deg,var(--orange),#d95200);
+  color:white; border:none; border-radius:10px;
+  font-size:15px; font-weight:800; cursor:pointer; font-family:'Montserrat',sans-serif;
+  transition:all 0.2s; letter-spacing:0.3px;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+}
+.btn-generate:hover:not(:disabled) { opacity:0.92; transform:translateY(-1px); box-shadow:0 6px 18px rgba(250,97,1,0.35); }
+
+#status { margin-top:12px; padding:13px 16px; border-radius:10px; font-size:13px; font-weight:600; display:none; }
+#status.loading { background:var(--light); color:var(--dark); border:1px solid var(--teal); display:block; }
+#status.ok { background:var(--success); color:#27500a; border:1px solid #9dcc6b; display:block; }
+#status.err { background:var(--error); color:#a32d2d; border:1px solid #f5c2c2; display:block; }
+
+/* History table */
+.history-table-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.history-table-wrap table { width:100%; border-collapse:collapse; }
+.history-table-wrap thead { background:var(--dark); }
+.history-table-wrap th { padding:10px 14px; font-size:10px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--teal); text-align:left; }
+.history-table-wrap td { padding:10px 14px; font-size:12px; border-bottom:1px solid var(--border); }
+.history-table-wrap tr:last-child td { border-bottom:none; }
+.history-table-wrap tr:hover td { background:#f7fafc; }
+.order-badge { display:inline-block; padding:3px 10px; border-radius:8px; font-size:10px; font-weight:700; background:var(--light); color:var(--dark); border:1px solid var(--teal); }
+{% endblock %}
+
+{% block content %}
+<div class="mto-hero">
+  <h1>Órdenes de Mantenimiento</h1>
+  <p>Genera checklists PDF y consulta el historial de órdenes.</p>
+</div>
+
+<div class="mto-tabs">
+  <div class="mto-tab active" onclick="switchTab('nueva')">➕ Nueva Orden</div>
+  <div class="mto-tab" onclick="switchTab('historial')">📋 Historial ({{ ordenes|length }})</div>
+</div>
+
+<!-- TAB: Nueva Orden -->
+<div class="mto-tab-content active" id="tab-nueva">
+  <div style="max-width:860px; margin:0 auto; padding-bottom:40px;">
+
+    <div class="card">
+      <span class="section-label">📋 1. Identificación del sistema y datos generales</span>
+      <div class="form-grid">
+        <div class="field">
+          <label>Nombre / Razón Social del cliente</label>
+          <input type="text" id="cliente" placeholder="Ej. Construcciones Del Valle S.A. de C.V.">
+        </div>
+        <div class="field">
+          <label>No. Central / Sistema</label>
+          <input type="text" id="central" placeholder="Ej. GCV001">
+        </div>
+        <div class="field full">
+          <label>Dirección del sistema</label>
+          <input type="text" id="direccion" placeholder="Ej. Blvd. Agua Caliente 1234, Tijuana, B.C.">
+        </div>
+        <div class="field">
+          <label>Potencia instalada (kWp)</label>
+          <input type="text" id="potencia" placeholder="Ej. 10.2 kWp">
+        </div>
+        <div class="field">
+          <label>Número de módulos</label>
+          <input type="text" id="n_modulos" placeholder="Ej. 24">
+        </div>
+        <div class="field">
+          <label>Potencia por panel (Wp)</label>
+          <input type="text" id="potencia_panel" placeholder="Ej. 550 Wp">
+        </div>
+        <div class="field">
+          <label>Cant. / Potencia inversor (kW)</label>
+          <input type="text" id="inv_cant_pot" placeholder="Ej. 1 × 5 kW">
+        </div>
+        <div class="field">
+          <label>Marca / Modelo del inversor</label>
+          <input type="text" id="inversor_marca" placeholder="Ej. Growatt MIN 10000TL-X">
+        </div>
+        <div class="field">
+          <label>Número de serie del inversor</label>
+          <input type="text" id="inversor_serie" placeholder="Ej. GRT2024XXXXXX">
+        </div>
+        <div class="field">
+          <label>Tipo de sistema</label>
+          <select id="tipo_sistema">
+            <option value="">Seleccionar...</option>
+            <option>Interconectado a red (Grid-tie)</option>
+            <option>Aislado (Off-grid)</option>
+            <option>Híbrido con baterías</option>
+            <option>Bombeo solar</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Voltaje del sistema (V)</label>
+          <input type="text" id="voltaje" placeholder="Ej. 220 V / 48 V">
+        </div>
+        <div class="field">
+          <label>Técnico responsable</label>
+          <input type="text" id="tecnico" placeholder="Nombre completo">
+        </div>
+        <div class="field">
+          <label>Supervisor</label>
+          <input type="text" id="firma_supervisor" value="{{ nombre }}" placeholder="Nombre del supervisor">
+        </div>
+        <div class="field">
+          <label>Orden de mantenimiento</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="text" id="orden" readonly style="flex:1;">
+            <button type="button" onclick="regenOrden()"
+                    style="font-family:inherit;font-size:10px;font-weight:700;background:var(--dark);color:#fff;border:none;border-radius:6px;padding:9px 10px;cursor:pointer;white-space:nowrap;">
+              ↺ Nuevo
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Fecha del servicio</label>
+          <input type="date" id="fecha">
+        </div>
+        <div class="field">
+          <label>Hora de inicio</label>
+          <select id="hora_inicio">
+            <option value="">Seleccionar...</option>
+            <option>06:00</option><option>06:15</option><option>06:30</option><option>06:45</option>
+            <option>07:00</option><option>07:15</option><option>07:30</option><option>07:45</option>
+            <option>08:00</option><option>08:15</option><option>08:30</option><option>08:45</option>
+            <option>09:00</option><option>09:15</option><option>09:30</option><option>09:45</option>
+            <option>10:00</option><option>10:15</option><option>10:30</option><option>10:45</option>
+            <option>11:00</option><option>11:15</option><option>11:30</option><option>11:45</option>
+            <option>12:00</option><option>12:15</option><option>12:30</option><option>12:45</option>
+            <option>13:00</option><option>13:15</option><option>13:30</option><option>13:45</option>
+            <option>14:00</option><option>14:15</option><option>14:30</option><option>14:45</option>
+            <option>15:00</option><option>15:15</option><option>15:30</option><option>15:45</option>
+            <option>16:00</option><option>16:15</option><option>16:30</option><option>16:45</option>
+            <option>17:00</option><option>17:15</option><option>17:30</option><option>17:45</option>
+            <option>18:00</option><option>18:15</option><option>18:30</option><option>18:45</option>
+            <option>19:00</option><option>19:15</option><option>19:30</option><option>19:45</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Hora de fin</label>
+          <select id="hora_fin">
+            <option value="">Seleccionar...</option>
+            <option>06:00</option><option>06:15</option><option>06:30</option><option>06:45</option>
+            <option>07:00</option><option>07:15</option><option>07:30</option><option>07:45</option>
+            <option>08:00</option><option>08:15</option><option>08:30</option><option>08:45</option>
+            <option>09:00</option><option>09:15</option><option>09:30</option><option>09:45</option>
+            <option>10:00</option><option>10:15</option><option>10:30</option><option>10:45</option>
+            <option>11:00</option><option>11:15</option><option>11:30</option><option>11:45</option>
+            <option>12:00</option><option>12:15</option><option>12:30</option><option>12:45</option>
+            <option>13:00</option><option>13:15</option><option>13:30</option><option>13:45</option>
+            <option>14:00</option><option>14:15</option><option>14:30</option><option>14:45</option>
+            <option>15:00</option><option>15:15</option><option>15:30</option><option>15:45</option>
+            <option>16:00</option><option>16:15</option><option>16:30</option><option>16:45</option>
+            <option>17:00</option><option>17:15</option><option>17:30</option><option>17:45</option>
+            <option>18:00</option><option>18:15</option><option>18:30</option><option>18:45</option>
+            <option>19:00</option><option>19:15</option><option>19:30</option><option>19:45</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Condición inicial del sistema</label>
+          <div class="radio-grid">
+            <label class="radio-option" onclick="selectCondicion(this)">
+              <input type="radio" name="condicion" value="Operando normalmente"> Operando normalmente
+            </label>
+            <label class="radio-option" onclick="selectCondicion(this)">
+              <input type="radio" name="condicion" value="Con alarma activa"> Con alarma activa
+            </label>
+            <label class="radio-option" onclick="selectCondicion(this)">
+              <input type="radio" name="condicion" value="Fuera de servicio"> Fuera de servicio
+            </label>
+            <label class="radio-option" onclick="selectCondicion(this)">
+              <input type="radio" name="condicion" value="Primera visita"> Primera visita
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-generate" onclick="generatePDF()">
+        ⚡ Generar Checklist PDF
+      </button>
+      <div id="status"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TAB: Historial -->
+<div class="mto-tab-content" id="tab-historial">
+  <div style="max-width:1000px; margin:0 auto; padding-bottom:40px;">
+    {% if ordenes %}
+    <div class="history-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Orden</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Central</th>
+            <th>Técnico</th>
+            <th>Elaborado por</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in ordenes %}
+          <tr>
+            <td><span class="order-badge">{{ o.numero_orden }}</span></td>
+            <td>{{ o.fecha_servicio or '—' }}</td>
+            <td>{{ o.cliente or '—' }}</td>
+            <td>{{ o.central or '—' }}</td>
+            <td>{{ o.tecnico or '—' }}</td>
+            <td>{{ o.elaborado_nombre }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:60px 20px; color:var(--gray);">
+      <div style="font-size:48px; margin-bottom:12px;">🔧</div>
+      <div style="font-size:16px; font-weight:700; color:var(--dark); margin-bottom:6px;">Sin órdenes aún</div>
+      <div style="font-size:13px;">Genera tu primera orden de mantenimiento desde la pestaña "Nueva Orden".</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/static/gecova_fonts.js"></script>
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.mto-tab').forEach((t,i) => {
+    t.classList.toggle('active', (tab === 'nueva' && i===0) || (tab === 'historial' && i===1));
+  });
+  document.getElementById('tab-nueva').classList.toggle('active', tab === 'nueva');
+  document.getElementById('tab-historial').classList.toggle('active', tab === 'historial');
+}
+function selectCondicion(el) {
+  document.querySelectorAll('.radio-option').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : "";
+}
+
+// ── Checklist data ────────────────────────────────────────────────────────────
+const SECTIONS = [
+  {
+    num: "2", icon: "☀", title: "INSPECCIÓN DE MÓDULOS FOTOVOLTAICOS", color: [250,97,1],
+    items: [
+      ["Inspección visual de superficie: suciedad, polvo, sales o excrementos acumulados",
+       "Limpiar con agua desmineralizada y esponja suave. No usar abrasivos ni alta presión."],
+      ["Integridad del vidrio frontal: grietas, burbujas, delaminación o decoloración",
+       "Grieta o burbuja = módulo fuera de servicio. Registrar número de serie."],
+      ["Marco de aluminio: corrosión, dobleces, daño físico o puntos de contacto sueltos", null],
+      ["Caja de conexiones (junction box): sellado, humedad interna, corrosión en terminales",
+       "Asegurar cierre hermético. Aplicar sellador UV si hay fisuras visibles."],
+      ["Diodos de bypass: ausencia de quemaduras o deformación en la caja de conexiones", null],
+      ["Puntos calientes (hotspots): inspección con cámara termográfica o por tacto comparativo",
+       "Diferencia >10 °C entre celdas indica falla. Documentar con fotografía."],
+      ["Voltaje en circuito abierto (Voc) por string — comparar con valor nominal del fabricante",
+       "Tolerancia aceptable: ±3% del Voc nominal. Desviación mayor = módulo degradado."],
+      ["Corriente de cortocircuito (Isc) por string — detectar desbalances entre cadenas",
+       "Diferencia >5% entre strings indica módulo degradado o sombreado parcial."],
+      ["Polaridad correcta (+/−) en cada string antes de reconectar al inversor", null],
+      ["Resistencia de aislamiento entre conductores activos y tierra (≥1 MΩ a 500 VDC)",
+       "Usar megóhmetro 500 VDC. Desconectar inversor antes de medir. Registrar valor."],
+    ]
+  },
+  {
+    num: "3", icon: "🔩", title: "ESTRUCTURA DE MONTAJE Y ANCLAJES", color: [9,79,104],
+    items: [
+      ["Corrosión, oxidación o deformación en perfiles, rieles y conectores de estructura",
+       "Galvanizado o anodizado. Corrosión superficial: limpiar y aplicar anticorrosivo."],
+      ["Apriete de tornillos, pernos y tuercas con llave de torque (M8=25 Nm, M10=45 Nm)",
+       "Registro de torque recomendado según catálogo del fabricante de estructura."],
+      ["Continuidad de tierra mecánica de módulos y estructura (resistencia < 5 Ω)",
+       "Según NOM-001-SEDE. Verificar con multímetro o telurómetro."],
+      ["Abrazaderas y clips de sujeción de módulos: sin holgura, bien alineados", null],
+      ["Distancia posterior entre módulos y techo para ventilación (mínimo 10 cm)", null],
+      ["Estado de impermeabilización en perforaciones de losa, techo o membrana",
+       "Aplicar sikaflex o material equivalente. Sin fisuras ni filtración de agua."],
+    ]
+  },
+  {
+    num: "4", icon: "⚡", title: "CABLEADO CC Y CA", color: [250,97,1],
+    items: [
+      ["Cable PV (USE-2 / XHHW-2): cortes, aplastamiento, decoloración o exposición de aislante",
+       "Sección mínima según corriente de diseño. Reemplazar tramo dañado completo."],
+      ["Cables no en contacto con bordes metálicos cortantes — usar canaleta o espiral", null],
+      ["Conectores MC4: sin humedad, sin corrosión, seguro de bloqueo activado",
+       "No mezclar marcas de conectores MC4. Inspeccionar visualmente cada uno."],
+      ["Cableado CA inversor–tablero: calibre correcto, sin empalmes al descubierto", null],
+      ["Identificación de conductores: fases, neutro y tierra etiquetados conforme a NOM", null],
+      ["Sujetadores y separadores de cable cada 50 cm en trayectorias horizontales", null],
+      ["Caída de tensión en cableado CC — máximo 2% del voltaje nominal del sistema",
+       "ΔV(%) = (2 × L × I × ρ) / (A × V) × 100. Documentar valor medido."],
+    ]
+  },
+  {
+    num: "5", icon: "🔌", title: "INVERSOR Y DISPOSITIVOS DE CONVERSIÓN", color: [9,79,104],
+    items: [
+      ["Carcasa: daños físicos, oxidación, ingreso de agua o humedad — verificar sello IP",
+       "IP mínimo en exterior: IP65. Revisar sello perimetral de la tapa."],
+      ["Limpiar filtros de ventilación y rejillas (aire comprimido seco, inversor apagado)", null],
+      ["Display: tensiones MPPT, potencia activa, frecuencia, temperatura de operación",
+       "Temperatura operación < 60 °C. Comparar parámetros vs. hoja de datos del equipo."],
+      ["Historial de alarmas y errores: registrar códigos y consultar manual si persisten", null],
+      ["Tensiones de entrada CC por string: dentro del rango MPPT del inversor",
+       "Rango MPPT típico: 200–800 VDC. Verificar en placa de datos del equipo."],
+      ["Parámetros CA de salida: tensión (V), frecuencia (Hz), factor de potencia",
+       "Tensión nominal 127/220 V ±5%. Frecuencia 60 Hz ±0.3 Hz (NOM-EM-001)."],
+      ["Función anti-isla (anti-islanding): desconexión ante pérdida de red eléctrica",
+       "Test según manual del fabricante. Obligatorio conforme NOM-EM-001-SENER."],
+      ["Verificar actualización de firmware disponible en app o portal del fabricante", null],
+    ]
+  },
+  {
+    num: "6", icon: "🛡", title: "PROTECCIONES ELÉCTRICAS Y SISTEMA DE TIERRA FÍSICA", color: [250,97,1],
+    items: [
+      ["Fusibles CC por string: continuidad eléctrica y calibre correcto (1.25 × Isc módulo)",
+       "Verificar marca, rating de voltaje y corriente. Reemplazar si hay continuidad abierta."],
+      ["Interruptores termomagnéticos CC y CA: prueba de disparo manual y calibre", null],
+      ["Descargadores de sobretensión SPD Tipo 1 y Tipo 2: indicador de estado activo",
+       "Indicador verde = activo. Rojo o ausente = reemplazar de inmediato."],
+      ["Resistencia de puesta a tierra con telurómetro (valor < 5 Ω según NOM-001-SEDE)",
+       "Registrar valor medido, condición del suelo y método de medición utilizado."],
+      ["Continuidad del conductor de tierra (verde-amarillo) en todo el circuito",
+       "Sin empalmes expuestos. Sección mínima igual al conductor activo mayor."],
+      ["Gabinete combinador / junction box de strings: apriete de bornes y ausencia de arcos", null],
+    ]
+  },
+];
+
+// ── PDF helpers ──────────────────────────────────────────────────────────────
+function val(id) { return (document.getElementById(id)?.value || "").trim(); }
+function condicion() {
+  const checked = document.querySelector('input[name="condicion"]:checked');
+  return checked ? checked.value : "";
+}
+
+function wrapText(doc, text, x, maxW, fontSize) {
+  doc.setFontSize(fontSize);
+  return doc.splitTextToSize(text, maxW);
+}
+
+function addPageWithHeader(doc, logo, pageNum, totalPages) {
+  if (pageNum > 1) doc.addPage();
+
+  // Header bar
+  doc.setFillColor(9, 79, 104);
+  doc.rect(0, 0, 216, 20, "F");
+
+  // Logo
+  doc.addImage(logo, "PNG", 6, 1.5, 26, 15.5, undefined, "FAST");
+
+  // Title
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("Montserrat", "bold");
+  doc.setFontSize(10);
+  const title = "CHECKLIST DE MANTENIMIENTO PREVENTIVO";
+  const tw = doc.getTextWidth(title);
+  doc.text(title, (216 - tw) / 2, 8.5);
+
+  doc.setFont("Montserrat", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(121, 196, 219);
+  const sub = "Sistemas Fotovoltaicos Interconectados y Aislados";
+  const sw = doc.getTextWidth(sub);
+  doc.text(sub, (216 - sw) / 2, 14);
+
+  // Page number
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(7);
+  doc.text(`Pág. ${pageNum} / ${totalPages}`, 208, 8.5, {align:"right"});
+
+  // Orange stripe
+  doc.setFillColor(250, 97, 1);
+  doc.rect(0, 20, 216, 1.2, "F");
+
+  // Footer
+  doc.setFillColor(235, 240, 245);
+  doc.rect(0, 268, 216, 8, "F");
+  doc.setFont("Montserrat", "normal");
+  doc.setFontSize(6);
+  doc.setTextColor(107, 122, 141);
+  doc.text("GECOVA Ingeniería  ·  @gecova.mx  ·  Baja California, México", 8, 272.5);
+  doc.setTextColor(250, 97, 1);
+  doc.text("NOM-001-SEDE  ·  NMX-J-595  ·  IEC 62446  ·  NOM-EM-001", 208, 272.5, {align:"right"});
+
+  return 24; // starting Y after header
+}
+
+function drawSectionBand(doc, y, icon, title, color) {
+  doc.setFillColor(...color);
+  doc.rect(8, y, 200, 7, "F");
+  doc.setFont("Montserrat", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text(`${icon}  ${title}`, 12, y + 4.8);
+  return y + 7 + 4; // gap after band
+}
+
+function drawCheckbox(doc, x, y, sz=3.2) {
+  doc.setDrawColor(9, 79, 104);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(x, y, sz, sz, 0.5, 0.5, "S");
+}
+
+function drawItem(doc, y, num, text, nota, endY=268) {
+  const indent = 12;
+  const txtX   = indent + 10;
+  const maxW   = 200 - txtX + 8;
+
+  doc.setFont("Montserrat", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(250, 97, 1);
+  doc.text(`${num}.`, indent, y);
+
+  drawCheckbox(doc, indent + 4.5, y - 2.8);
+
+  doc.setFont("Montserrat", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(44, 44, 44);
+  const lines = doc.splitTextToSize(text, maxW);
+  doc.text(lines, txtX, y);
+  y += lines.length * 4;
+
+  if (nota) {
+    const nlines = doc.splitTextToSize(`▸ ${nota}`, maxW);
+    // Note background
+    const noteH = nlines.length * 3.8 + 3;
+    doc.setFillColor(234, 246, 251);
+    doc.roundedRect(txtX - 1, y - 0.5, maxW + 1, noteH, 1, 1, "F");
+    doc.setFont("Montserrat", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(9, 79, 104);
+    doc.text(nlines, txtX + 1.5, y + 2.5);
+    y += noteH + 1;
+  }
+
+  return y + 3;
+}
+
+function drawObsBox(doc, y, label, lines=2) {
+  doc.setFont("Montserrat", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(9, 79, 104);
+  doc.text(label, 12, y + 3.5);
+  y += 6;
+  doc.setDrawColor(214, 228, 236);
+  doc.setLineWidth(0.35);
+  for (let i = 0; i < lines; i++) {
+    doc.line(12, y + i*6, 204, y + i*6);
+  }
+  return y + lines * 6 + 3;
+}
+
+// ── Main generate ─────────────────────────────────────────────────────────────
+async function generatePDF() {
+  const status = document.getElementById("status");
+  status.className = "";
+  status.textContent = "Guardando orden y generando PDF...";
+
+  // Save to server first
+  try {
+    const saveRes = await fetch('/mantenimiento/guardar', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        cliente:      val("cliente"),
+        central:      val("central"),
+        direccion:    val("direccion"),
+        tecnico:      val("tecnico"),
+        supervisor:   val("firma_supervisor"),
+        fecha:        val("fecha"),
+        tipo_sistema: val("tipo_sistema"),
+        potencia:     val("potencia"),
+        condicion:    document.querySelector('input[name="condicion"]:checked')?.value || '',
+      })
+    });
+    const saveData = await saveRes.json();
+    if (!saveData.ok) throw new Error(saveData.error || "Error al guardar");
+    // Update order field with confirmed server number
+    document.getElementById("orden").value = saveData.orden;
+  } catch(saveErr) {
+    status.className = "err";
+    status.textContent = "Error al guardar: " + saveErr.message;
+    return;
+  }
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:"mm", format:"letter", orientation:"portrait" });
+
+    // Register fonts
+    doc.addFileToVFS("Montserrat-Regular.ttf", MONT_REG);
+    doc.addFileToVFS("Montserrat-Bold.ttf", MONT_BOLD);
+    doc.addFont("Montserrat-Regular.ttf", "Montserrat", "normal");
+    doc.addFont("Montserrat-Bold.ttf", "Montserrat", "bold");
+
+    const logo = "data:image/png;base64," + LOGO_B64;
+    // TOTAL will be patched after generation
+    let TOTAL = 99; // placeholder
+    let pageNum = 1;
+    let y = addPageWithHeader(doc, logo, pageNum, TOTAL);
+
+    // ── Normas pills ──
+    const normas = ["NOM-001-SEDE-2012","NOM-EM-001-SENER","NMX-J-595-ANCE","IEC 62446","IEC 61215","IEC 61730"];
+    doc.setFont("Montserrat","bold"); doc.setFontSize(6.5); doc.setTextColor(9,79,104);
+    doc.text("Referencias normativas:", 8, y + 3.5);
+    let px = 60;
+    normas.forEach(n => {
+      doc.setFont("Montserrat","bold"); doc.setFontSize(6);
+      const pw = doc.getTextWidth(n) + 5;
+      doc.setFillColor(121,196,219); doc.roundedRect(px, y, pw, 5.5, 1.5, 1.5, "F");
+      doc.setTextColor(9,79,104); doc.text(n, px+2.5, y+3.8);
+      px += pw + 3;
+    });
+    y += 7;
+
+    // ── Section 1: Datos generales ──
+    y = drawSectionBand(doc, y, "📋", "1. IDENTIFICACIÓN DEL SISTEMA Y DATOS GENERALES", [9,79,104]);
+
+    // ── Row 1: Nombre/Razón Social (wide) + No. Central (narrow) ──
+    const horario = val("hora_inicio") && val("hora_fin")
+      ? val("hora_inicio") + " – " + val("hora_fin") + " hrs"
+      : val("hora_inicio") || val("hora_fin") || "";
+
+    // Custom 3-col row: label | value (wide) | label | value (narrow)
+    const nombreLbl = "Nombre / Razón Social:";
+    const centralLbl = "No. Central:";
+    const nombreW = doc.getTextWidth(nombreLbl);
+    const centralW = doc.getTextWidth(centralLbl);
+    doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+    doc.text(nombreLbl, 12, y);
+    doc.setDrawColor(214,228,236); doc.setLineWidth(0.3);
+    doc.line(12 + nombreW + 2, y+0.5, 148, y+0.5);
+    if(val("cliente")){ doc.setFont("Montserrat","normal"); doc.setFontSize(7.5); doc.setTextColor(44,44,44); doc.text(val("cliente"), 12+nombreW+4, y); }
+    doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+    doc.text(centralLbl, 152, y);
+    doc.setDrawColor(214,228,236); doc.setLineWidth(0.3);
+    doc.line(152 + centralW + 2, y+0.5, 204, y+0.5);
+    if(val("central")){ doc.setFont("Montserrat","normal"); doc.setFontSize(7.5); doc.setTextColor(44,44,44); doc.text(val("central"), 152+centralW+4, y); }
+    y += 5;
+
+    // ── Dirección: full width ──
+    doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+    const dirLbl = "Dirección del sistema:";
+    doc.text(dirLbl, 12, y);
+    doc.setDrawColor(214,228,236); doc.setLineWidth(0.3);
+    doc.line(12 + doc.getTextWidth(dirLbl) + 2, y+0.5, 204, y+0.5);
+    if(val("direccion")){ doc.setFont("Montserrat","normal"); doc.setFontSize(7.5); doc.setTextColor(44,44,44); doc.text(val("direccion"), 12+doc.getTextWidth(dirLbl)+4, y); }
+    y += 5;
+
+    const fields = [];   // no longer used for full-width rows
+    const twoCol = [
+      ["Potencia instalada (kWp)",   val("potencia"),        "Número de módulos",        val("n_modulos")],
+      ["Potencia por panel (Wp)",    val("potencia_panel"),  "Cant. / Potencia inversor",  val("inv_cant_pot")],
+      ["Marca / Modelo inversor",    val("inversor_marca"),  "N° de serie inversor",     val("inversor_serie")],
+      ["Tipo de sistema",            val("tipo_sistema"),    "Voltaje del sistema",       val("voltaje")],
+      ["Orden de mantenimiento",     val("orden"),           "Técnico responsable",       val("tecnico")],
+      ["Fecha del servicio",         val("fecha"),           "Hora inicio / Hora fin",    horario],
+    ];
+
+    // Full-width rows
+    fields.forEach(([label, value]) => {
+      doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+      doc.text(label + ":", 12, y);
+      doc.setDrawColor(214,228,236); doc.setLineWidth(0.3);
+      doc.line(12 + doc.getTextWidth(label+":")+2, y+0.5, 204, y+0.5);
+      if (value) {
+        doc.setFont("Montserrat","normal"); doc.setFontSize(7.5); doc.setTextColor(44,44,44);
+        doc.text(value, 12 + doc.getTextWidth(label+":")+4, y);
+      }
+      y += 5;
+    });
+
+    // Two-column rows
+    twoCol.forEach(([l1,v1,l2,v2]) => {
+      doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+      doc.text(l1+":", 12, y);
+      doc.setDrawColor(214,228,236); doc.setLineWidth(0.3);
+      doc.line(12+doc.getTextWidth(l1+":")+2, y+0.5, 106, y+0.5);
+      if(v1){ doc.setFont("Montserrat","normal"); doc.setFontSize(7.5); doc.setTextColor(44,44,44); doc.text(v1, 12+doc.getTextWidth(l1+":")+4, y); }
+      doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+      doc.text(l2+":", 112, y);
+      doc.setDrawColor(214,228,236); doc.setLineWidth(0.3);
+      doc.line(112+doc.getTextWidth(l2+":")+2, y+0.5, 204, y+0.5);
+      if(v2){ doc.setFont("Montserrat","normal"); doc.setFontSize(7.5); doc.setTextColor(44,44,44); doc.text(v2, 112+doc.getTextWidth(l2+":")+4, y); }
+      y += 5;
+    });
+
+    // Condición inicial
+    const cond = condicion();
+    doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+    doc.text("Condición inicial:", 12, y + 2);
+    y += 2;
+    const condOpts = ["Operando normalmente","Con alarma activa","Fuera de servicio","Primera visita"];
+    let cx2 = 58;
+    condOpts.forEach(opt => {
+      const pw = doc.getTextWidth(opt) + 8;
+      const isSelected = opt === cond;
+      doc.setFillColor(isSelected ? 9 : 244, isSelected ? 79 : 247, isSelected ? 104 : 250);
+      doc.setDrawColor(9,79,104); doc.setLineWidth(0.3);
+      doc.roundedRect(cx2, y-4, pw, 6, 2, 2, isSelected ? "FD" : "D");
+      doc.setFont("Montserrat","bold"); doc.setFontSize(6.5);
+      doc.setTextColor(isSelected ? 255 : 107, isSelected ? 255 : 122, isSelected ? 255 : 141);
+      doc.text(opt, cx2+4, y);
+      cx2 += pw + 4;
+    });
+    y += 5;
+
+    y += 6;
+
+    // ── Technical sections (continue on same page) ──
+    const SAFE = 260;
+
+    for (let si = 0; si < SECTIONS.length; si++) {
+      const sec = SECTIONS[si];
+
+      // Estimate first item height to ensure band + first item fit together
+      const firstItem = sec.items[0];
+      const firstEstH = Math.ceil(firstItem[0].length / 65) * 4.5 +
+                        (firstItem[1] ? Math.ceil(firstItem[1].length / 65) * 3.8 + 5 : 0) + 8;
+      const bandH = 7 + 4; // band height + gap
+
+      // If band + first item don't fit, jump to new page
+      if (y + bandH + firstEstH > SAFE) {
+        pageNum++;
+        y = addPageWithHeader(doc, logo, pageNum, TOTAL);
+      }
+
+      y = drawSectionBand(doc, y, sec.icon, `${sec.num}. ${sec.title}`, sec.color);
+
+      for (let ii = 0; ii < sec.items.length; ii++) {
+        const [text, nota] = sec.items[ii];
+        // Estimate height
+        const estLines = Math.ceil(text.length / 65) + (nota ? Math.ceil(nota.length / 65) + 1 : 0);
+        const estH = estLines * 4.5 + 8;
+
+        if (y + estH > SAFE) {
+          pageNum++;
+          y = addPageWithHeader(doc, logo, pageNum, TOTAL);
+          y = drawSectionBand(doc, y, sec.icon, `${sec.num}. ${sec.title} (cont.)`, sec.color);
+        }
+
+        y = drawItem(doc, y, ii+1, text, nota);
+      }
+
+      // Reduce obs lines for sections with many items to save space
+      const obsLines = (sec.num === "3" || sec.num === "4") ? 1 : 2;
+      y = drawObsBox(doc, y, `Observaciones – ${sec.title.split(" ").slice(0,3).join(" ")}:`, obsLines);
+      y += 2;
+    }
+
+    // ── Section 7: Result ──
+    if (y > SAFE - 50) { pageNum++; y = addPageWithHeader(doc, logo, pageNum, TOTAL); }
+    y = drawSectionBand(doc, y, "✅", "7. RESULTADO DEL SERVICIO Y ACCIONES CORRECTIVAS", [9,79,104]);
+
+    doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+    doc.text("Estado general del sistema al cierre:", 12, y);
+    // 2×2 grid layout for estados
+    const estados = [
+      ["Sistema en óptimas condiciones",    "Requiere seguimiento menor"],
+      ["Requiere reparación urgente",        "Sistema fuera de servicio temporal"]
+    ];
+    y += 5;
+    const col2X = 110;
+    estados.forEach(row => {
+      row.forEach((est, ci) => {
+        const xPos = ci === 0 ? 12 : col2X;
+        drawCheckbox(doc, xPos, y - 3);
+        doc.setFont("Montserrat","normal"); doc.setFontSize(7.5); doc.setTextColor(44,44,44);
+        doc.text(est, xPos + 5, y);
+      });
+      y += 7;
+    });
+    y = drawObsBox(doc, y, "Acciones correctivas realizadas / pendientes:", 3);
+    y += 4;
+
+    // Próximo mantenimiento
+    doc.setFillColor(234,246,251); doc.roundedRect(12, y, 192, 10, 2, 2, "F");
+    doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+    doc.text("Próximo mantenimiento:", 14, y+6.5);
+    doc.setDrawColor(121,196,219); doc.setLineWidth(0.4);
+    doc.line(60, y+7, 116, y+7);
+    doc.text("Periodicidad:", 120, y+6.5);
+    [["Semestral",144],["Anual",162],["Según falla",175]].forEach(([lbl,px]) => {
+      drawCheckbox(doc, px, y+3.5, 3);
+      doc.setFont("Montserrat","normal"); doc.setFontSize(7); doc.setTextColor(44,44,44);
+      doc.text(lbl, px+4.5, y+6.5);
+    });
+    y += 16;
+
+    // Firma block
+    const firmaNombres = [
+      val("tecnico")          || "Nombre / Firma / Fecha",
+      val("firma_supervisor") || "Nombre / Firma / Fecha",
+      val("cliente")          || "Nombre / Firma / Fecha",
+    ];
+    doc.setFont("Montserrat","bold"); doc.setFontSize(7); doc.setTextColor(9,79,104);
+    doc.text("Firmas de conformidad:", 12, y); y += 5;
+    const fw = 60;
+    [["Técnico Responsable", firmaNombres[0]],
+     ["Supervisor",          firmaNombres[1]],
+     ["Cliente / Propietario", firmaNombres[2]]].forEach(([lbl,sub],i) => {
+      const fx = 12 + i*(fw+6);
+      doc.setDrawColor(214,228,236); doc.setLineWidth(0.4);
+      doc.roundedRect(fx, y, fw, 18, 1.5, 1.5, "S");
+      doc.line(fx+4, y+8, fx+fw-4, y+8);
+      doc.setFont("Montserrat","bold"); doc.setFontSize(6.5); doc.setTextColor(9,79,104);
+      doc.text(lbl, fx+fw/2, y+5.5, {align:"center"});
+      doc.setFont("Montserrat","normal"); doc.setFontSize(6); doc.setTextColor(107,122,141);
+      doc.text(sub, fx+fw/2, y+14, {align:"center"});
+    });
+
+    // ── Order was already saved server-side before PDF generation ──
+    // Fetch next order number for display
+    fetch('/mantenimiento/siguiente-orden')
+      .then(r => r.json())
+      .then(d => { document.getElementById("orden").value = d.orden; })
+      .catch(() => {});
+
+    // ── Patch total pages then save ──
+    const realTotal = doc.getNumberOfPages();
+    for (let p = 1; p <= realTotal; p++) {
+      doc.setPage(p);
+      // Overwrite page number area in header
+      doc.setFillColor(9, 79, 104);
+      doc.rect(175, 5, 35, 8, "F");
+      doc.setFont("Montserrat", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(255, 255, 255);
+      doc.text(`Pág. ${p} / ${realTotal}`, 208, 8.5, {align:"right"});
+    }
+    const clienteNom = val("cliente") || "cliente";
+    const centralNom  = (val("central") || "CENTRAL").replace(/\s+/g, "_").toUpperCase();
+    const ordenNom    = val("orden") || "SIN-ORDEN";
+    const fechaRaw    = val("fecha") || new Date().toISOString().slice(0,10);
+    const fechaStamp  = fechaRaw.replace(/-/g, "");
+    // Extract consecutive number from orden (last 3 digits)
+    const consMatch   = ordenNom.match(/(\d{3})$/);
+    const consNum     = consMatch ? consMatch[1] : "001";
+    const fname       = `${fechaStamp} - ${centralNom} - ORDEN DE MANTENIMIENTO_${consNum}.pdf`;
+    doc.save(fname);
+    status.className = "ok";
+    status.textContent = `✅  PDF generado: ${fname}`;
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById("status").className = "err";
+    document.getElementById("status").textContent = "Error al generar el PDF. Revisa la consola.";
+  }
+}
+
+// Set today as default date
+document.getElementById("fecha").valueAsDate = new Date();
+
+// Técnico y cliente vinculados directamente desde Sección 1
+
+// ── Orden management — server-side ──────────────────────────────────────────
+// Load next order number from server on page load
+(function initOrden() {
+  fetch('/mantenimiento/siguiente-orden')
+    .then(r => r.json())
+    .then(d => { document.getElementById("orden").value = d.orden; })
+    .catch(() => { document.getElementById("orden").value = "GCV - " + new Date().getFullYear() + " - MTO - 001"; });
+})();
+
+function regenOrden() {
+  fetch('/mantenimiento/siguiente-orden')
+    .then(r => r.json())
+    .then(d => { document.getElementById("orden").value = d.orden; })
+    .catch(() => {});
+}
+</script>
+
+</script>
+{% endblock %}
