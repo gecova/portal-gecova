@@ -184,6 +184,7 @@
 .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px 28px; margin-bottom:16px; box-shadow:0 2px 8px rgba(9,79,104,0.06); }
 .section-label { display:block; font-size:11px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:var(--dark); margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid var(--orange); }
 .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:600px) { .form-grid { grid-template-columns:1fr; } }
 .field { display:flex; flex-direction:column; gap:5px; }
 .field.full { grid-column:1/-1; }
 .field label { font-size:10px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--gray); }
@@ -194,10 +195,9 @@
 }
 .field input:focus, .field select:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(121,196,219,0.15); }
 .field input[readonly] { background:var(--light); font-weight:700; color:var(--dark); }
-.radio-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.radio-option { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all 0.18s; font-size:12px; font-weight:600; color:var(--text); overflow:hidden; width:100%; }
-.radio-option span { flex:1; min-width:0; word-break:break-word; }
-@media (max-width: 500px) { .radio-grid { grid-template-columns:1fr; } }
+.radio-grid { display:flex; flex-direction:column; gap:8px; }
+.radio-option { display:flex; align-items:center; gap:10px; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all 0.18s; font-size:13px; font-weight:600; color:var(--text); box-sizing:border-box; }
+.radio-option input[type=radio] { flex-shrink:0; width:16px; height:16px; }
 .radio-option:hover { border-color:var(--teal); background:var(--light); }
 .radio-option input[type=radio] { accent-color:var(--orange); transform:scale(1.2); }
 .radio-option.selected { border-color:var(--orange); background:#fff3ec; color:var(--dark); }
